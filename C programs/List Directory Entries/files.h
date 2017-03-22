@@ -1,4 +1,4 @@
+#include "list.h"
 
-
-int get_filesnames(char* folder, char*** filenames);
-int get_img_filenames(char*** filenames, int size_tab);
+int get_filesnames(char* folder, DList* files_lst);
+int get_img_filenames(DList* files_lst);

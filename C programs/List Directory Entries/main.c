@@ -5,40 +5,24 @@
 
 int main(int argc, char const *argv[]) {
   
-  char** filenames = NULL;
   int n_files = 0;
-  List l;
-  list_init (&l, &destroy_Elmt);
   
-  int a = 2;
-  int b = 3;
-  int c = 5;
+  DList idx_files;
+  dlist_init (&idx_files, NULL);
   
+  n_files = get_filesnames("/Users/vianneyyao/Documents/Images", &idx_files);
   
-  list_ins_next(&l, NULL, &a);
-  list_ins_next(&l, NULL, &b);
-  list_ins_next(&l, NULL, &c);
+  get_img_filenames(&idx_files);
   
-  ListElmt *e = l.head;
-  
+  DListElmt *e = idx_files.head;
   while(e != NULL ){
-    printf("%d\n", *(int*)(e->data));
+    printf("%s\n", e->data);
     e = e->next;
   }
   
-  n_files = get_filesnames("/Users/vianneyyao/Documents/Images", &filenames);
-  
-//  for (int i = 0; i < n_files; i++){
-//    printf("%s\n", filenames[i]);
-//  }
-  
-  get_img_filenames(&filenames, n_files);
-  
-  for (int i = 0; i < n_files; i++){
-    free(filenames[i]);
+  while(idx_files.head != NULL){
+    dlist_remove(&idx_files, idx_files.head, NULL);
   }
-  
-  free(filenames);
   
   return 0;
 }

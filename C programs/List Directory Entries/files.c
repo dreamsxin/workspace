@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -13,53 +11,66 @@ static int one (const struct dirent *unused){
   return 1;
 }
 
-int get_img_filenames(char*** filenames, int size_tab){
+int get_img_filenames(DList* files_lst){
   
   regex_t reg;
   const char* reg_str = ".*\\.png";
   
+  DListElmt* file = files_lst->head; 
+  DListElmt* tmp;
+  void *data = NULL;
+  
   if (!regcomp(&reg, reg_str, REG_ICASE)){
 
-    for (int i = 0; i < size_tab; i++){
-      if (!regexec(&reg, (*filenames)[i], 0, NULL, 0))
-        printf("%s\n", (*filenames)[i]);
+    while(file != NULL){
+      
+      if (regexec(&reg, file->data, 0, NULL, 0)){
+        
+        if (!dlist_is_tail(file))
+          file = file->next;
+          
+        dlist_remove(files_lst, file->prev, &data);
+      }
+      
+      else 
+        file = file->next;
+        
     }
   }
-
   
+  else{
+    printf("RegEx compilation error");
+  }
+
   return 0;
 }
 
-int get_filesnames(char* folder, char*** filenames){
+int get_filesnames(char* folder, DList* files_lst){
   
   struct dirent **eps;
   struct stat   buf;
   int f_entries;
-  char filename[200];
-  
+  char* filename;
   
   f_entries = scandir(folder, &eps, one, alphasort);
   
-  *filenames = (char**) malloc(f_entries * sizeof(char*));
-  for (int i = 0; i < f_entries; i++){
-    (*filenames)[i] = (char*) malloc(200 * sizeof(char));
-  }
-  
   if (f_entries >= 0){
-      int cnt;
-      for (cnt = 0; cnt < f_entries; cnt++){
 
+      for (int cnt = 0; cnt < f_entries; cnt++){
+        filename = (char*) malloc(200 * sizeof(char));
+        
         strcpy(filename, folder);
         strcat(filename, "/");
         strcat(filename, eps[cnt]->d_name);
 
-        strcpy((*filenames)[cnt], filename);
+        dlist_ins_next(files_lst, files_lst->tail, filename);
       }
-    }
+  }
     
-    else {
-      perror ("Couldn't open the directory");
-    }
+  else {
+    perror ("Couldn't open the directory");
+  }
 
   return f_entries;
 }
+
