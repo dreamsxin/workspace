@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,31 +15,18 @@ static int one (const struct dirent *unused){
   return 1;
 }
 
-int get_img_filenames(DList* files_lst){
+
+int _isImg(const char* file){
   
   regex_t reg;
   const char* reg_str = ".*\\.png";
   
-  DListElmt* file = files_lst->head; 
-  DListElmt* tmp;
-  void *data = NULL;
-  
   if (!regcomp(&reg, reg_str, REG_ICASE)){
-
-    while(file != NULL){
-      
-      if (regexec(&reg, file->data, 0, NULL, 0)){
-        
-        if (!dlist_is_tail(file))
-          file = file->next;
-          
-        dlist_remove(files_lst, file->prev, &data);
-      }
-      
-      else 
-        file = file->next;
-        
-    }
+    
+    if (!regexec(&reg, file, 0, NULL, 0))
+      return 1;
+    else 
+      return 0;
   }
   
   else{
@@ -47,12 +36,13 @@ int get_img_filenames(DList* files_lst){
   return 0;
 }
 
-int get_dir_filesnames(char* folder, DList* files_lst){
+int get_dir_filesnames(DList* files_lst){
   
   struct dirent **eps;
   struct stat   buf;
   int f_entries;
   char* filename;
+  char* folder = "./Images";
   
   f_entries = scandir(folder, &eps, one, alphasort);
   
@@ -64,8 +54,9 @@ int get_dir_filesnames(char* folder, DList* files_lst){
         strcpy(filename, folder);
         strcat(filename, "/");
         strcat(filename, eps[cnt]->d_name);
-
-        dlist_ins_next(files_lst, files_lst->tail, filename);
+        
+        if (_isImg(filename))
+          dlist_ins_next(files_lst, files_lst->tail, filename);
       }
   }
     

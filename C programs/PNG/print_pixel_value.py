@@ -1,6 +1,6 @@
 from scipy import misc
 
-img = misc.imread("/Users/vianneyyao//Documents/output.png")
+img = misc.imread("/Users/vianneyyao/Documents/img.png")
 
 i, j , k = img.shape
 for x in range(i):

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "files.h"
-#include "list.h"
+#include "dlist.h"
 
 int main(int argc, char const *argv[]) {
   
@@ -10,7 +10,7 @@ int main(int argc, char const *argv[]) {
   DList idx_files;
   dlist_init (&idx_files, NULL);
   
-  n_files = get_filesnames("/Users/vianneyyao/Documents/Images", &idx_files);
+  n_files = get_dir_filesnames("/Users/vianneyyao/Documents/Images", &idx_files);
   
   get_img_filenames(&idx_files);
   
@@ -20,9 +20,10 @@ int main(int argc, char const *argv[]) {
     e = e->next;
   }
   
-  while(idx_files.head != NULL){
-    dlist_remove(&idx_files, idx_files.head, NULL);
-  }
+  
+//  while(idx_files.head != NULL){
+//    dlist_remove(&idx_files, idx_files.head, NULL);
+//  }
   
   return 0;
 }
