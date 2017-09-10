@@ -16,6 +16,20 @@ static int one (const struct dirent *unused){
 }
 
 
+
+
+
+/*
+ * Function:  _isImg 
+ * -----------------
+ * check if a filename is a supported image filenamei:
+ *
+ *  file: filename to check
+ *
+ *  returns: 1 if match
+ *.          0 otherwise
+ *        
+ */
 int _isImg(const char* file){
   
   regex_t reg;
@@ -25,8 +39,6 @@ int _isImg(const char* file){
     
     if (!regexec(&reg, file, 0, NULL, 0))
       return 1;
-    else 
-      return 0;
   }
   
   else{
@@ -36,34 +48,54 @@ int _isImg(const char* file){
   return 0;
 }
 
-int get_dir_filesnames(DList* files_lst){
-  
-  struct dirent **eps;
-  struct stat   buf;
-  int f_entries;
-  char* filename;
-  char* folder = "./Images";
-  
-  f_entries = scandir(folder, &eps, one, alphasort);
-  
-  if (f_entries >= 0){
 
-      for (int cnt = 0; cnt < f_entries; cnt++){
-        filename = (char*) malloc(200 * sizeof(char));
+
+
+/*
+ * Function:  get_img_filesnames 
+ * -----------------------------
+ * scan a directory and sub-directories for images filenemas:
+ *
+ *  files_lst: list to contain the filenames
+ *
+ *  returns: return 0 if no eroor
+ *           return -1 otherwise
+ *        
+ */
+int get_img_filesnames(DList* files_lst){
+  
+  //Array of pointers to structures of type struct dirent which describe all 
+  //selected directory entries and which is allocated using malloc
+  struct dirent ** _eps;
+  
+  int _Nentries;                //the number of images filenames
+  char* _filename;              
+  char* _folder = "./Images";   //default image folder
+  
+  //scan directory and get filenames in sorted order
+  _Nentries = scandir(_folder, &_eps, one, alphasort);
+  
+  if (_Nentries >= 0){
+
+      for (int cnt = 0; cnt < _Nentries; cnt++){
+        _filename = (char*) malloc(200 * sizeof(char));
         
-        strcpy(filename, folder);
-        strcat(filename, "/");
-        strcat(filename, eps[cnt]->d_name);
+        strcpy(_filename, _folder);
+        strcat(_filename, "/");
+        strcat(_filename, _eps[cnt]->d_name);
         
-        if (_isImg(filename))
-          dlist_ins_next(files_lst, files_lst->tail, filename);
+        //check if filename is an image filename
+        if (_isImg(_filename))
+          dlist_ins_next(files_lst, files_lst->tail, _filename);
       }
+      
+      return 0;
   }
     
   else {
     perror ("Couldn't open the directory");
+    return -1;
   }
 
-  return f_entries;
 }
 

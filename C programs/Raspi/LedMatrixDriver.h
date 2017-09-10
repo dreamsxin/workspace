@@ -64,5 +64,6 @@ void pinMode(uint8_t pin, uint8_t mode);
 void digitalWrite(uint8_t pin, uint8_t value);
 void display(gsl_matrix* data);
 void setup_io();
+void LedMatrixDriver_init(void);
 
 

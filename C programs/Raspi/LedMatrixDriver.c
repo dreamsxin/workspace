@@ -76,24 +76,6 @@ void digitalWrite(uint8_t pin, uint8_t value){
 }
 
 void display(gsl_matrix* data){
-	void setup_io();
-	
-	pinMode(R1, 1);
-//	pinMode(G1, 1);
-//	pinMode(B1, 1);
-//	pinMode(R2, 1);
-//	pinMode(G2, 1);
-//	pinMode(B2, 1);
-//	
-//	pinMode(OE, 1);
-//	pinMode(CLK, 1);
-//	pinMode(LAT, 1);
-//	
-//	pinMode(ADD_A, 1);
-//	pinMode(ADD_B, 1);
-//	pinMode(ADD_C, 1);
-//	pinMode(ADD_D, 1);
-	
 	
 	while(1){
 		puts("Ok");
@@ -113,20 +95,41 @@ void display(gsl_matrix* data){
 			}
 			puts("Sleep");
 			sleep(1);
-//			
+			
 //			digitalWrite(LAT, 0);
 //			digitalWrite(OE, 0);
 //			
-//			digitalWrite(ADD_A, 1 && (row<<0));
-//			digitalWrite(ADD_B, 1 && (row<<1));
-//			digitalWrite(ADD_C, 1 && (row<<2));
-//			digitalWrite(ADD_D, 1 && (row<<3));
+//			digitalWrite(ADD_A, 1 && (row>>0));
+//			digitalWrite(ADD_B, 1 && (row>>1));
+//			digitalWrite(ADD_C, 1 && (row>>2));
+//			digitalWrite(ADD_D, 1 && (row>>3));
 //			
 //			digitalWrite(OE, 1);
 //			digitalWrite(LAT, 0);
-//			
+			
 		}
 	}
+}
+
+void LedMatrixDriver_init(void){
+	setup_io();
+	
+	pinMode(R1, 1);
+	pinMode(G1, 1);
+	pinMode(B1, 1);
+	pinMode(R2, 1);
+	pinMode(G2, 1);
+	pinMode(B2, 1);
+	
+	pinMode(OE, 1);
+	pinMode(CLK, 1);
+	pinMode(LAT, 1);
+	
+	pinMode(ADD_A, 1);
+	pinMode(ADD_B, 1);
+	pinMode(ADD_C, 1);
+	pinMode(ADD_D, 1);
+	
 }
 
 

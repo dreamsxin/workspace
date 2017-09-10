@@ -113,29 +113,23 @@ int _save_matrix(char* filename, gsl_matrix_ulong* mat){
 	return 0;
 }
 
-uint8_t _rescale_plot_value(gsl_vector_ulong* _dst_val, gsl_vector* _src_val, double _min_value, double _max_value){
+uint8_t _rescale_plot_value(gsl_vector* _dst_val, gsl_vector* _src_val, double _min_value, double _max_value){
 	
 	double _alpha = (_max_value - _min_value) / (gsl_vector_max(_src_val) - gsl_vector_min(_src_val));
 	double _beta  = _min_value - _alpha*gsl_vector_min(_src_val);
 	
-	gsl_vector* _dst_double_val = gsl_vector_alloc(_src_val->size);
+	gsl_vector_memcpy(_dst_val, _src_val);
 	
-	gsl_vector_memcpy(_dst_double_val, _src_val);
-	
-	gsl_vector_scale(_dst_double_val, _alpha);
-	gsl_vector_add_constant(_dst_double_val, _beta);
-	
-	for (uint32_t i=0; i<_dst_double_val->size; i++){
-		gsl_vector_ulong_set(_dst_val, i, gsl_vector_get(_dst_double_val, i));
-	}
+	gsl_vector_scale(_dst_val, _alpha);
+	gsl_vector_add_constant(_dst_val, _beta);
 	
 	return 0;
 }
 
 uint8_t plot(gsl_vector* x_array, gsl_vector* y_array){
 	
-	gsl_vector_ulong* _x_val = gsl_vector_ulong_alloc(x_array->size);
-	gsl_vector_ulong* _y_val = gsl_vector_ulong_alloc(y_array->size);
+	gsl_vector* _x_val = gsl_vector_alloc(x_array->size);
+	gsl_vector* _y_val = gsl_vector_alloc(y_array->size);
 	
 	_rescale_plot_value(_x_val, x_array, 0, SCREEN_WDTH-1);
 	_rescale_plot_value(_y_val, y_array, 0, SCREEN_HGHT-1);
@@ -145,19 +139,20 @@ uint8_t plot(gsl_vector* x_array, gsl_vector* y_array){
 	
 	
 	
-	for (uint32_t i=0; i<_x_val->size; i++){
-//			printf("%Lf %Lf\n", gsl_vector_long_double_get(y_array, i), gsl_vector_long_double_get(x_array, i));
-			draw_pixel(buffer, gsl_vector_ulong_get(_x_val, i), gsl_vector_ulong_get(_y_val, i), 0xFFFFFF);
-	}
+//	for (uint32_t i=0; i<_x_val->size; i++){
+////			printf("%Lf %Lf\n", gsl_vector_long_double_get(y_array, i), gsl_vector_long_double_get(x_array, i));
+//			draw_pixel(buffer, gsl_vector_get(_x_val, i), gsl_vector_get(_y_val, i), 0xFFFFFF);
+////			draw_line(buffer, gsl_vector_get(_x_val, i), gsl_vector_get(_y_val, i), gsl_vector_get(_x_val, i+1), gsl_vector_get(_y_val, i+1), 0xFFFFFF, 2);
+//	}
 	
 //	for (uint32_t i=0; i<_x_val->size-2; i++){
-//			draw_line(buffer, gsl_vector_ulong_get(_x_val, i),   gsl_vector_ulong_get(_y_val, i),
-//												gsl_vector_ulong_get(_x_val, i+1), gsl_vector_ulong_get(_y_val, i+1), 0xFFFFFF);
+//			draw_line(buffer, gsl_vector_get(_x_val, i),   gsl_vector_get(_y_val, i),
+//												gsl_vector_get(_x_val, i+1), gsl_vector_get(_y_val, i+1), 0xFFFFFF, 2);
 //	}
-
-//	draw_line(buffer, gsl_vector_ulong_get(_x_val, 10),   gsl_vector_ulong_get(_y_val, 10),
-//										gsl_vector_ulong_get(_x_val, 11), gsl_vector_ulong_get(_y_val, 11), 0xFFFFFF);
-//	draw_line(buffer, 0 , 0, SCREEN_WDTH/2, SCREEN_HGHT/2, 0xFFFFFF);
+//
+	draw_line(buffer, 10, 10,
+										11, 100, 0xFFFFFF, 3);
+//	draw_line(buffer, 0, 0, SCREEN_WDTH/2, SCREEN_HGHT/2, 0xFFFFFF, 3);
 																																
 	_save_matrix("img.png", buffer);
 	gsl_matrix_ulong_free(buffer);
@@ -172,15 +167,28 @@ uint8_t draw_pixel(gsl_matrix_ulong * buffer, uint32_t x, uint32_t y, uint32_t c
 	return 0;
 }
 
-uint8_t draw_line(gsl_matrix_ulong * buffer, const uint32_t x0, const uint32_t y0, const uint32_t x1, const uint32_t y1, const uint32_t color){
+uint8_t draw_line(gsl_matrix_ulong * buffer, double x0, double y0, double x1, double y1, uint32_t color, uint8_t thickness){
 	
-	double dy = ((double)y1 - y0) / (x1 - x0);
-	double x_unit_var = (x1 - x0) / fabs((double)x1 - x0);
-	double y = y0;
+	double _alpha_eq_line = (y1 - y0) / (x1 - x0);
+	double _beta_eq_line  = (y0 - _alpha_eq_line * x0);
 	
-	for (long long x=x0; x!=x1; x += x_unit_var){
-		draw_pixel(buffer, x, y, color);
-		y += dy;
+	double _thick = (thickness - 1) / 2; 
+	double dy = (y1 - y0) / (x1 - x0);
+	
+	for (double x = x0; x <= x1; x++){
+		for (double y = y0; y <= y1; y++){
+			if (fabs(y) == fabs(_alpha_eq_line * x + _beta_eq_line)){
+				
+				for(long i = 0; i < thickness; i++){
+					if ( (y + 0.5 * i) < SCREEN_HGHT )
+						draw_pixel(buffer, (uint32_t) x, (uint32_t) (y + 0.5 * i), color);
+					if ( (y - 0.5 * i) >= 0 )
+						draw_pixel(buffer, (uint32_t) x, (uint32_t) (y - 0.5 * i), color);
+						
+				}
+			}
+		}
+//		draw_pixel(buffer, (uint32_t) x, (uint32_t) y, color);
 	}
 	return 0;
 }
