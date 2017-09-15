@@ -4,7 +4,7 @@
 #define PAGE_SIZE (4*1024)
 #define BLOCK_SIZE (4*1024)
 
-#define GPIFSEL_OFFSET           0
+#define GPIO_AFSEL               0
 #define GPSET_OFFSET             7
 #define GPCLR_OFFSET             10
 
@@ -26,7 +26,7 @@
 
 //Matrix color pins
 #define R1 5
-#define G1 13
+#define G1 13 
 #define B1 6
 #define R2 12
 #define G2 16
@@ -65,5 +65,3 @@ void digitalWrite(uint8_t pin, uint8_t value);
 void display(gsl_matrix* data);
 void setup_io();
 void LedMatrixDriver_init(void);
-
-

@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
 	png_init_io(png_ptr, fp);
 
 	// Write header (8 bit colour depth)
+	
 	png_set_IHDR(png_ptr, info_ptr, width, height,
 			8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
 			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
