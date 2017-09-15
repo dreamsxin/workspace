@@ -26,7 +26,7 @@
 
 //Matrix color pins
 #define R1 5
-#define G1 13 
+#define G1 13
 #define B1 6
 #define R2 12
 #define G2 16
@@ -46,6 +46,10 @@
 //pinMode
 #define inputMode 0
 #define ouputMode 1
+
+//Output Level
+#define LOW  0
+#define HIGH 1
 
 #include <stdint.h>
 #include <gsl/gsl_matrix.h>

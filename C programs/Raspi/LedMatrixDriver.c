@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -13,34 +14,27 @@ void *gpio_map;
 //// I/O access
 volatile unsigned *gpio;
 
-//mode = 1 -> Output
-//mode = 0 -> input
+
 void pinMode(uint8_t pin, uint8_t mode){
-	// uint32_t offset = (pin / 10) * 0x4;
-	// printf("%8x", offset);
+
+	//Input Mode
 	* (gpio + (pin/10)) &= ~(7 << (( pin%10) * 3));
-	// printf("%8x\n", * (gpio + pin/10));
+
+	//Ouput Mode
 	if (mode == ouputMode){
 		* (gpio + (pin/10)) |= (1 << ((pin%10) * 3));
 	}
-//	printf("%x\n", 1<<(pin - pin/10*10)*3);
-//	printf("%8x\n", * (gpio + pin/10));
 }
 
 void digitalWrite(uint8_t pin, uint8_t value){
 	if (pin <= 53){
+
 		if (value == 0){
 			* (gpio + GPCLR_OFFSET + (pin/32)) =  1<<(pin%32);
-//			printf("CLR\n");
-//			printf("%x\n",    (gpio + GPCLR_OFFSET + (pin/32)));
-//			printf("%8x\n", * (gpio + GPCLR_OFFSET + (pin/32)));
 		}
 
 		else{
 			* (gpio + GPSET_OFFSET + (pin/32)) =  1<<(pin%32);
-//			printf("SET\n");
-//			printf("%x\n",    (gpio + GPSET_OFFSET + (pin/32)));
-//			printf("%8x\n", * (gpio + GPSET_OFFSET + (pin/32)));
 		}
 	}
 }
@@ -48,49 +42,55 @@ void digitalWrite(uint8_t pin, uint8_t value){
 void display(gsl_matrix* data){
 
 	uint8_t row, column;
-	uint8_t val = 2;
+	uint8_t bitPos;
+	uint8_t bitDepth = 8;
 
-	printf("%8x %8x\n", (gpio + 0), * (gpio + 0));
-	printf("%8x %8x\n", (gpio + 1), * (gpio + 1));
-	printf("%8x %8x\n", (gpio + 2), * (gpio + 2));
-
+	uint8_t R, G, B;
 
 	while(1){
-		puts("Ok");
+
 		for (row = 0; row < 16; row++){
-			for (column = 0; column < 64; column++){
+			for (bitPos = 0; bitPos < bitDepth; bitPos++){
+				for (column = 0; column < 64; column++){
 
-				digitalWrite(CLK, 0);
+					digitalWrite(CLK, 0);
 
-				digitalWrite(R1, 1);
-				digitalWrite(G1, 0);
-				digitalWrite(B1, 1);
+					R = ( (uint32_t) gsl_matrix_get(data, row, column) & 0xFF0000 ) >> 16;
+					G = ( (uint32_t) gsl_matrix_get(data, row, column) & 0x00FF00 ) >>  8;
+					B = ( (uint32_t) gsl_matrix_get(data, row, column) & 0x0000FF )      ;
 
-				digitalWrite(R2, 1);
-				digitalWrite(G2, 0);
-				digitalWrite(B2, 1);
+					digitalWrite(R1, (R >> bitPos) & 0x1);
+					digitalWrite(G1, (G >> bitPos) & 0x1);
+					digitalWrite(B1, (B >> bitPos) & 0x1);
 
-				digitalWrite(CLK, 1);
+					R = ( (uint32_t) gsl_matrix_get(data, row+16, column) & 0xFF0000 ) >> 16;
+					G = ( (uint32_t) gsl_matrix_get(data, row+16, column) & 0x00FF00 ) >>  8;
+					B = ( (uint32_t) gsl_matrix_get(data, row+16, column) & 0x0000FF )      ;
+
+					digitalWrite(R2, (R >> bitPos) & 0x1);
+					digitalWrite(G2, (G >> bitPos) & 0x1);
+					digitalWrite(B2, (B >> bitPos) & 0x1);
+
+					digitalWrite(CLK, HIGH);
+				}
+
+				digitalWrite(OE, HIGH);
+
+				digitalWrite(ADD_A, (row & 0x1)     );
+				digitalWrite(ADD_B, (row & 0x2) >> 1);
+				digitalWrite(ADD_C, (row & 0x4) >> 2);
+				digitalWrite(ADD_D, (row & 0x8) >> 3);
+
+				digitalWrite(LAT, HIGH);
+				digitalWrite(LAT, LOW);
+
+				digitalWrite(OE, LOW);
+
+				for (uint32_t i = 0; i < pow(2, bitPos)*3; i++){}
+
+				// sleep(1);
+
 			}
-
-
-			digitalWrite(OE, 1);
-
-			digitalWrite(ADD_A, (row & 0x1)     );
-			digitalWrite(ADD_B, (row & 0x2) >> 1);
-			digitalWrite(ADD_C, (row & 0x4) >> 2);
-			digitalWrite(ADD_D, (row & 0x8) >> 3);
-	
-			digitalWrite(LAT, 1);
-			digitalWrite(LAT, 0);
-
-			digitalWrite(OE, 0);
-
-			printf("%d %d %d %d %d\n", row, (row & 0x1) >> 0, (row & 0x2) >> 1, (row & 0x4) >> 2, (row & 0x8) >> 3);
-			puts("Sleep");
-
-			sleep(1);
-
 		}
 	}
 }

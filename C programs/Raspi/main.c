@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
   printf("Hello world\n");
 
-  gsl_matrix* imgMatrix = gsl_matrix_alloc(200, 200);
+  gsl_matrix* imgMatrix = gsl_matrix_alloc(32, 64);
 //  gsl_matrix_set_identity(imgMatrix);
 //  gsl_matrix_scale(imgMatrix, 255);
 
